@@ -178,7 +178,20 @@ watch(
                             <td class="text-center p-1">{{ so.customer }}</td>
                             <td class="text-center p-1">{{ so.bill_to }}</td>
                             <td class="text-center p-1">{{ so.grand_total }}</td>
-                            <td class="text-center p-1">{{ so.status }}</td>
+                            <td class="text-center p-1">
+                                <span
+                                    class="inline-block px-2.5 py-1 rounded-full text-[11px] font-semibold"
+                                    :class="{
+                                        'bg-gray-100 text-gray-600': so.status?.toLowerCase() === 'draft',
+                                        'bg-amber-100 text-amber-700': so.status?.toLowerCase() === 'approval',
+                                        'bg-green-100 text-green-700': so.status?.toLowerCase() === 'approved',
+                                        'bg-blue-100 text-blue-700': so.status?.toLowerCase() === 'post',
+                                        'bg-red-100 text-red-700': so.status?.toLowerCase() === 'reject',
+                                    }"
+                                >
+                                    {{ so.status }}
+                                </span>
+                            </td>
                             <td class="text-center p-2">
                                 <button
                                     class="w-9 h-9 rounded-full bg-white mx-auto cursor-pointer"
@@ -207,7 +220,20 @@ watch(
                             <td class="text-center p-1">{{ so.customer }}</td>
                             <td class="text-center p-1">{{ so.bill_to }}</td>
                             <td class="text-center p-1">{{ so.grand_total }}</td>
-                            <td class="text-center p-1">{{ so.status }}</td>
+                            <td class="text-center p-1">
+                                <span
+                                    class="inline-block px-2.5 py-1 rounded-full text-[11px] font-semibold"
+                                    :class="{
+                                        'bg-gray-100 text-gray-600': so.status?.toLowerCase() === 'draft',
+                                        'bg-amber-100 text-amber-700': so.status?.toLowerCase() === 'approval',
+                                        'bg-green-100 text-green-700': so.status?.toLowerCase() === 'approved',
+                                        'bg-blue-100 text-blue-700': so.status?.toLowerCase() === 'post',
+                                        'bg-red-100 text-red-700': so.status?.toLowerCase() === 'reject',
+                                    }"
+                                >
+                                    {{ so.status }}
+                                </span>
+                            </td>
                             <td class="text-center p-2">
                                 <button
                                     class="w-9 h-9 rounded-full bg-white mx-auto cursor-pointer"

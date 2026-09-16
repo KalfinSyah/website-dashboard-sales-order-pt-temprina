@@ -28,7 +28,6 @@ const sumSalesNow = computed(() => {
 })
 const sumSalesYesterday = computed(() => {
     const yesterday = new Date()
-
     yesterday.setDate(yesterday.getDate() - 1)
 
     const day = yesterday.getDate()
@@ -46,7 +45,7 @@ const sumSalesYesterday = computed(() => {
                 orderYear === year
             )
         })
-        .reduce((sum, order) => sum + Number(order.total_amount || 0), 0)
+        .length   // ✅ count, not sum
 })
 const sumSalesThisMonth = computed(() => {
     return store.salesOrders.filter(order =>
@@ -55,19 +54,14 @@ const sumSalesThisMonth = computed(() => {
 })
 const sumSalesLastMonth = computed(() => {
     const currentMonth = new Date().getMonth() + 1
-
-    const lastMonth =
-        currentMonth === 1
-            ? 12
-            : currentMonth - 1
+    const lastMonth = currentMonth === 1 ? 12 : currentMonth - 1
 
     return store.salesOrders
         .filter(order => {
             const [, month] = order.so_date.split('/').map(Number)
-
             return month === lastMonth
         })
-        .reduce((sum, order) => sum + Number(order.total_amount || 0), 0)
+        .length   // ✅ count, not sum
 })
 const totalAmountThisYear = computed(() => {
     return store.salesOrders
