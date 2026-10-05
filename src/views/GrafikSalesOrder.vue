@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useSalesOrderStore } from '@/stores/salesOrder';
-import { computed, ref, watch, type ComputedRef } from 'vue';
+import { computed, ref, type ComputedRef } from 'vue';
 import {
     Chart as ChartJS,
     Title,
@@ -11,6 +11,7 @@ import {
     LinearScale
 } from 'chart.js'
 import { Bar } from 'vue-chartjs'
+import { getStatusPresentasePerubahan, hitungPersentasePerubahan, isCurrentMonth, isCurrentYear, isNaikOrTurunOrTidakAdaPerubahan, isToday, lastMonth, yesterday } from '@/utils';
 
 ChartJS.register(
     Title,
@@ -27,167 +28,110 @@ const sumSalesNow = computed(() => {
     ).length
 })
 const sumSalesYesterday = computed(() => {
-    const yesterday = new Date()
-    yesterday.setDate(yesterday.getDate() - 1)
-
-    const day = yesterday.getDate()
-    const month = yesterday.getMonth() + 1
-    const year = yesterday.getFullYear()
-
     return store.salesOrders
         .filter(order => {
             const [orderDay, orderMonth, orderYear] =
                 order.so_date.split('/').map(Number)
 
             return (
-                orderDay === day &&
-                orderMonth === month &&
-                orderYear === year
+                orderDay === yesterday().getDate() &&
+                orderMonth === yesterday().getMonth() + 1 &&
+                orderYear === yesterday().getFullYear()
             )
         })
-        .length   // ✅ count, not sum
+        .length
 })
+const tampilkanPersentasePerubahanSalesOrderHariIniDenganKemarin = computed(() => 
+    isNaikOrTurunOrTidakAdaPerubahan(
+        hitungPersentasePerubahan(
+            sumSalesNow.value,
+            sumSalesYesterday.value
+        )
+    )
+)
 const sumSalesThisMonth = computed(() => {
     return store.salesOrders.filter(order =>
         isCurrentMonth(order.so_date)
     ).length
 })
 const sumSalesLastMonth = computed(() => {
-    const currentMonth = new Date().getMonth() + 1
-    const lastMonth = currentMonth === 1 ? 12 : currentMonth - 1
+    return store.salesOrders.filter(order => {
+            const [, orderMonth, orderYear] =
+                order.so_date.split('/').map(Number)
 
-    return store.salesOrders
-        .filter(order => {
-            const [, month] = order.so_date.split('/').map(Number)
-            return month === lastMonth
+            return (
+                orderMonth === lastMonth().getMonth() + 1 &&
+                orderYear === lastMonth().getFullYear()
+            )
         })
-        .length   // ✅ count, not sum
+        .length
 })
-const totalAmountThisYear = computed(() => {
-    return store.salesOrders
-        .filter(order => {
-            const [, , yearFromSO] = order.so_date.split('/').map(Number)
-
-            return yearFromSO === year.value
-        })
-        .reduce((sum, order) => sum + Number(order.total_amount || 0), 0)
-})
-const totalAmountThisYearIDR = computed(() => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0,
-    }).format(totalAmountThisYear.value)
-})
-const displayTotalAmount = computed(() =>
-    formatPerubahan(
-        hitungPersenPerubahan(
-            totalAmountThisYear.value,
-            totalAmountLastYear.value
-        )
-    )
-)
-const displaySalesMonth = computed(() =>
-    formatPerubahan(
-        hitungPersenPerubahan(
+const tampilkanPersentasePerubahanSalesOrderBulanIniDenganBulanLalu = computed(() =>
+    isNaikOrTurunOrTidakAdaPerubahan(
+        hitungPersentasePerubahan(
             sumSalesThisMonth.value,
             sumSalesLastMonth.value
         )
     )
 )
-const displaySalesDay = computed(() => 
-    formatPerubahan(
-        hitungPersenPerubahan(
-            sumSalesNow.value,
-            sumSalesYesterday.value
+const totalAmountChosenYear = computed(() => {
+    let sum = 0
+    for (const i of store.salesOrders) {
+        if (i.so_date.split('/')[2] === year.value.toString()) {
+            sum += Number(i.grand_total || 0)
+            console.log('year date', i.so_date, ' total amount', i.grand_total, 'sum', sum)
+        }
+    }
+
+    return sum
+})
+const totalAmountChosenYearIDR = computed(() => {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+    }).format(totalAmountChosenYear.value)
+})
+const totalAmountOneYearBeforeChoosenYear = computed(() => {
+    let sum = 0
+    for (const i of store.salesOrders) {
+        if (i.so_date.split('/')[2] === (year.value - 1).toString()) {
+            sum += Number(i.grand_total || 0)
+        }
+    }
+    return sum
+})
+const displayTotalAmount = computed(() =>
+    isNaikOrTurunOrTidakAdaPerubahan(
+        hitungPersentasePerubahan(
+            totalAmountChosenYear.value,
+            totalAmountOneYearBeforeChoosenYear.value
         )
     )
 )
-const totalAmountLastYear = computed(() => {
-    return store.salesOrders
-        .filter(order => {
-            const [, , yearFromSO] = order.so_date.split('/').map(Number)
 
-            return yearFromSO === year.value - 1
-        })
-        .reduce((sum, order) => sum + Number(order.total_amount || 0), 0)
-})
-const hitungPersenPerubahan = (current: number, previous: number) => {
-    if (previous === 0) {
-        return 0
-    }
-
-    return ((current - previous) / previous) * 100
-}
-const formatPerubahan = (value: number) => {
-    if (value > 0) {
-        return `Naik ${value.toFixed(1)}%`
-    }
-
-    if (value < 0) {
-        return `Turun ${Math.abs(value).toFixed(1)}%`
-    }
-
-    return 'Tidak ada perubahan'
-}
-const createStatusPerubahan = (
-    current: ComputedRef<number>,
-    previous: ComputedRef<number>
-) => {
-    return computed(() => {
-        const value = hitungPersenPerubahan(
-            current.value,
-            previous.value
-        )
-
-        if (value > 0) return 'naik'
-        if (value < 0) return 'turun'
-
-        return 'tetap'
-    })
-}
-const statusSalesDay = createStatusPerubahan(
+const statusSalesDay = getStatusPresentasePerubahan(
     sumSalesNow,
     sumSalesYesterday
 )
 
-const statusSalesMonth = createStatusPerubahan(
+const statusSalesMonth = getStatusPresentasePerubahan(
     sumSalesThisMonth,
     sumSalesLastMonth
 )
 
-const statusTotalAmount = createStatusPerubahan(
-    totalAmountThisYear,
-    totalAmountLastYear
+const statusTotalAmount = getStatusPresentasePerubahan(
+    totalAmountChosenYear,
+    totalAmountOneYearBeforeChoosenYear
 )
 const year = ref(new Date().getFullYear())
-const controlYear = (symbol: String) => {
+const controlYear = (symbol: string) => {
+    const currentYear = new Date().getFullYear()
     if (symbol === '+') {
-        year.value++
+        if (year.value < currentYear) year.value++
     } else {
         year.value--
     }
-}
-const isToday = (dateString: String) => {
-    const [day, month, year] = dateString.split('/').map(Number)
-
-    const today = new Date()
-
-    return (
-        day === today.getDate() &&
-        month === today.getMonth() + 1 &&
-        year === today.getFullYear()
-    )
-}
-const isCurrentMonth = (dateString: string) => {
-    const [, month, year] = dateString.split('/').map(Number)
-
-    const today = new Date()
-
-    return (
-        month === today.getMonth() + 1 &&
-        year === today.getFullYear()
-    )
 }
 const dataJumlahPenjualanPerbulan = computed(() => {
     const monthlyTotals = Array(12).fill(0)
@@ -236,6 +180,7 @@ const chartOptions = {
         }
     }
 }
+
 </script>
 
 <template>
@@ -263,7 +208,7 @@ const chartOptions = {
                                 'text-gray-500': statusSalesDay === 'tetap'
                             }"
                         >
-                            {{ displaySalesDay }}
+                            {{ tampilkanPersentasePerubahanSalesOrderHariIniDenganKemarin }}
                         </span>
                         dari hari kemarin
                     </p>
@@ -279,7 +224,7 @@ const chartOptions = {
                                 'text-gray-500': statusSalesMonth === 'tetap'
                             }"
                         >
-                            {{ displaySalesMonth }}
+                            {{ tampilkanPersentasePerubahanSalesOrderBulanIniDenganBulanLalu }}
                         </span>
                         dari bulan kemarin
                     </p>
@@ -287,7 +232,7 @@ const chartOptions = {
             </div>
             <div class="bg-white w-full p-4 mt-5">
                 <p class="font-bold">Total Amounts</p>
-                <p class="font-bold text-[40px]"> {{ totalAmountThisYearIDR }} </p>
+                <p class="font-bold text-[40px]"> {{ totalAmountChosenYearIDR }} </p>
                 <p>
                     <span
                         :class="{

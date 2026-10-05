@@ -5,6 +5,17 @@ import Swal from 'sweetalert2';
 import router from '@/router';
 import { useSalesOrderStore } from '@/stores/salesOrder';
 
+const formatRupiah = (value: number | string) => {
+    const amount = Number(value) || 0;
+
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    }).format(amount);
+};
+
 const store = useSalesOrderStore();
 const salesOrderData = ref<any[]>([]);
 const filteredSalesOrderData = ref<any[]>([]);
@@ -111,6 +122,8 @@ watch(
         if (value) {
             salesOrderData.value = store.salesOrders;
         }
+
+        console.log('Sales Order Data:', salesOrderData.value);
     },
     {
         immediate: true,
@@ -177,12 +190,12 @@ watch(
                             <td class="text-center p-1">{{ so.so_date }}</td>
                             <td class="text-center p-1">{{ so.customer }}</td>
                             <td class="text-center p-1">{{ so.bill_to }}</td>
-                            <td class="text-center p-1">{{ so.grand_total }}</td>
+                            <td class="text-center p-1">{{ formatRupiah(so.grand_total) }}</td>
                             <td class="text-center p-1">
                                 <span
                                     class="inline-block px-2.5 py-1 rounded-full text-[11px] font-semibold"
                                     :class="{
-                                        'bg-gray-100 text-gray-600': so.status?.toLowerCase() === 'draft',
+                                        'bg-gray-300 text-gray-600': so.status?.toLowerCase() === 'draft',
                                         'bg-amber-100 text-amber-700': so.status?.toLowerCase() === 'approval',
                                         'bg-green-100 text-green-700': so.status?.toLowerCase() === 'approved',
                                         'bg-blue-100 text-blue-700': so.status?.toLowerCase() === 'post',
@@ -219,12 +232,12 @@ watch(
                             <td class="text-center p-1">{{ so.so_date }}</td>
                             <td class="text-center p-1">{{ so.customer }}</td>
                             <td class="text-center p-1">{{ so.bill_to }}</td>
-                            <td class="text-center p-1">{{ so.grand_total }}</td>
+                            <td class="text-center p-1">{{ formatRupiah(so.grand_total) }}</td>
                             <td class="text-center p-1">
                                 <span
                                     class="inline-block px-2.5 py-1 rounded-full text-[11px] font-semibold"
                                     :class="{
-                                        'bg-gray-100 text-gray-600': so.status?.toLowerCase() === 'draft',
+                                        'bg-gray-300 text-gray-600': so.status?.toLowerCase() === 'draft',
                                         'bg-amber-100 text-amber-700': so.status?.toLowerCase() === 'approval',
                                         'bg-green-100 text-green-700': so.status?.toLowerCase() === 'approved',
                                         'bg-blue-100 text-blue-700': so.status?.toLowerCase() === 'post',
