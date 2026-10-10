@@ -24,10 +24,10 @@ export const useSalesOrderStore = defineStore('salesOrder', () => {
 
             const result = await response.json();
 
-            salesOrders.value = result.data;
+            salesOrders.value = result;
             loaded.value = true;
 
-            return result.data;
+            return result;
         } catch (error) {
             console.error(error);
             return [];
