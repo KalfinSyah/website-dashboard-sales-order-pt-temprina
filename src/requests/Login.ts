@@ -7,7 +7,7 @@ export const login = async (
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${import.meta.env.VITE_CHATBOT_API_KEY}`,
+                Authorization: `Bearer ${import.meta.env.VITE_LOGIN_API_KEY}`,
             },
             body: JSON.stringify({
                 username,
