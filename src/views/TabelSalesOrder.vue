@@ -122,8 +122,6 @@ watch(
         if (value) {
             salesOrderData.value = store.salesOrders;
         }
-
-        console.log('Sales Order Data:', salesOrderData.value);
     },
     {
         immediate: true,

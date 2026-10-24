@@ -79,10 +79,8 @@ const totalAmountChosenYear = computed(() => {
     for (const i of store.salesOrders) {
         if (i.so_date.split('/')[2] === year.value.toString()) {
             sum += Number(i.grand_total || 0)
-            console.log('year date', i.so_date, ' total amount', i.grand_total, 'sum', sum)
         }
     }
-
     return sum
 })
 const totalAmountChosenYearIDR = computed(() => {
