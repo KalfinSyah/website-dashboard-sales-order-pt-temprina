@@ -57,7 +57,7 @@ const logout = async () => {
                         isActive ? 'bg-[#DADADA] font-semibold italic' : ''
                     ]"
                 >
-                    Sistem RAG
+                    Chatbot
                 </li>
             </router-link>
 
