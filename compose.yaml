@@ -1,7 +1,7 @@
 services:
   frontend:
     build: .
-    image: website-dashboard-sales-order-pt-temprina-frontend
+    image: website-dashboard-sales-order-pt-temprina
     ports:
       - "5173:5173"
     env_file:
